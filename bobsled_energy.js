@@ -221,7 +221,7 @@ function initGraphics() {
 function updateSelectPositions() {
   let selectY = 473; // works well on firefox
   if (isChrome) {
-    selectY = 478;
+    selectY = 480;
   }
 
   heightSelect.x = gameCanvas.getBoundingClientRect().left + 87;
