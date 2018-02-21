@@ -28,13 +28,13 @@ var start_time; // computed
 var last_displacement = 0;
 
 // select boxes
-var pushSelect, massSelect, surfaceSelect, positionSelect;
+var heightSelect, massSelect, surfaceSelect, positionSelect;
 
 // values for options
-var pushOptionValues = [];
-pushOptionValues['Small'] = 200;
-pushOptionValues['Medium'] = 275;
-pushOptionValues['Large'] = 350;
+var heightOptionValues = [];
+heightOptionValues['Small'] = 200;
+heightOptionValues['Medium'] = 275;
+heightOptionValues['Large'] = 350;
 
 var massOptionValues = [];
 massOptionValues['Small'] = 20;
@@ -53,6 +53,8 @@ positionOptionValues['Sit'] = 0.012;
 positionOptionValues['Stand'] = 0.02;
 
 var currentBackground;
+
+var bobsled; // container
 
 var position_y = 6; // position of bobsled dudes in bobsled
 
@@ -128,37 +130,53 @@ function initGraphics() {
   pushguy.x = 0;
   pushguy.y = 370;
   pushguy.gotoAndPlay("normal");
-  stage.addChild(pushguy);
+  //stage.addChild(pushguy);
 
 
+  ramp_low.y = ramp_med.y = ramp_high.y = 230;
+  ramp_low.x = ramp_med.x = ramp_high.x = -65;
+  stage.addChild(ramp_low);
 
-  // bobsled
-  bobsled.x = 20;
-  bobsled.y = 360;
-
-
+  // bobsled container
+  bobsled = new createjs.Container();
   // bobsled dude(s)
   for (var i = 0; i < 3; i++) {
-    stage.addChild(bobsled_dudes[i]);
+    bobsled_dudes[i].x = (bobsled_image.x + 7) + 13 * i;
+    bobsled_dudes[i].y = (bobsled_image.y) + position_y;
+    bobsled.addChild(bobsled_dudes[i]);
   }
-  updateBobsledDudes();
+  bobsled.addChild(bobsled_image);
+
+  bobsled.setBounds(bobsled_image.x, bobsled_image.y, bobsled_image.image.width, bobsled_image.image.height);
+  bobsled.regX = bobsled.width/2;
+  bobsled.regY = bobsled.height/2;
+  bobsled.x = 40;
+  bobsled.y = 340;
+  bobsled.rotation = 46;
+  stage.addChild(bobsled);
+
+
+//  updateBobsledDudes();
 
   stage.addChild(bobsled);
 
+
+
   // OVERLAYED SELECT BOXES
 
-  // push select
-  var pushSelectHTML = document.createElement('select');
-  pushSelectHTML.id = "pushSelect";
-  pushSelectHTML.class = "overlayed";
-  var pushOptions = ["Small", "Medium", "Large"];
-  addOptionsToSelect(pushSelectHTML, pushOptions);
-  pushSelectHTML.style.position = "absolute";
-  pushSelectHTML.style.top = 0;
-  pushSelectHTML.style.left = 0;
-  pushSelectHTML.style.width = "70px";
-  document.body.appendChild(pushSelectHTML);
-  pushSelect = new createjs.DOMElement(pushSelectHTML);
+  // height select
+  var heightSelectHTML = document.createElement('select');
+  heightSelectHTML.id = "heightSelect";
+  heightSelectHTML.class = "overlayed";
+  var heightOptions = ["Low", "Medium", "High"];
+  addOptionsToSelect(heightSelectHTML, heightOptions);
+  heightSelectHTML.style.position = "absolute";
+  heightSelectHTML.style.top = 0;
+  heightSelectHTML.style.left = 0;
+  heightSelectHTML.style.width = "70px";
+  heightSelectHTML.onchange = updateHeight;
+  document.body.appendChild(heightSelectHTML);
+  heightSelect = new createjs.DOMElement(heightSelectHTML);
 
   // mass select
   var massSelectHTML = document.createElement('select');
@@ -206,7 +224,7 @@ function initGraphics() {
   positionSelect = new createjs.DOMElement(positionSelectHTML);
 
   updateSelectPositions(); // position the select elements correctly
-  stage.addChild(pushSelect);
+  stage.addChild(heightSelect);
   stage.addChild(massSelect);
   stage.addChild(surfaceSelect);
   stage.addChild(positionSelect);
@@ -242,8 +260,8 @@ function updateSelectPositions() {
     selectY = 478;
   }
 
-  pushSelect.x = gameCanvas.getBoundingClientRect().left + 65;
-  pushSelect.y = gameCanvas.getBoundingClientRect().top + selectY;
+  heightSelect.x = gameCanvas.getBoundingClientRect().left + 65;
+  heightSelect.y = gameCanvas.getBoundingClientRect().top + selectY;
 
   massSelect.x = gameCanvas.getBoundingClientRect().left + 212;
   massSelect.y = gameCanvas.getBoundingClientRect().top + selectY;
@@ -283,8 +301,7 @@ function initListeners() {
 
 function updateBobsledDudes() {
   for (var i = 0; i < 3; i++) {
-    bobsled_dudes[i].x = (bobsled.x + 12) + 22 * i;
-    bobsled_dudes[i].y = bobsled.y + position_y;
+
   }
 }
 
@@ -326,19 +343,35 @@ function updateSurface() {
   currentBackground = backgrounds[surfaceSelect.htmlElement.value];
 }
 
+function updateHeight() {
+  if (heightSelect.htmlElement.value == "Low") {
+    stage.removeChild(ramp_high);
+    stage.removeChild(ramp_med);
+    stage.addChildAt(ramp_low, stage.getChildIndex(bobsled) - 1);
+  } else if (heightSelect.htmlElement.value == "Medium") {
+    stage.removeChild(ramp_low);
+    stage.removeChild(ramp_high);
+    stage.addChildAt(ramp_med, stage.getChildIndex(bobsled) - 1);
+  } else if (heightSelect.htmlElement.value == "High") {
+    stage.removeChild(ramp_low);
+    stage.removeChild(ramp_med);
+    stage.addChildAt(ramp_high, stage.getChildIndex(bobsled) - 1);
+  }
+}
+
 function updateMass() {
   if (massSelect.htmlElement.value == "Small") {
-    stage.removeChild(bobsled_dudes[0]);
-    stage.removeChild(bobsled_dudes[1]);
-    stage.addChildAt(bobsled_dudes[2], stage.getChildIndex(bobsled) - 1);
+    bobsled.removeChild(bobsled_dudes[0]);
+    bobsled.removeChild(bobsled_dudes[1]);
+    bobsled.addChildAt(bobsled_dudes[2], 0);
   } else if (massSelect.htmlElement.value == "Medium") {
-    stage.removeChild(bobsled_dudes[0]);
-    stage.addChildAt(bobsled_dudes[1], stage.getChildIndex(bobsled) - 1);
-    stage.addChildAt(bobsled_dudes[2], stage.getChildIndex(bobsled) - 1);
+    bobsled.removeChild(bobsled_dudes[0]);
+    bobsled.addChildAt(bobsled_dudes[1], 0);
+    bobsled.addChildAt(bobsled_dudes[2], 0);
   } else if (massSelect.htmlElement.value == "Large") {
-    stage.addChildAt(bobsled_dudes[0], stage.getChildIndex(bobsled) - 1);
-    stage.addChildAt(bobsled_dudes[1], stage.getChildIndex(bobsled) - 1);
-    stage.addChildAt(bobsled_dudes[2], stage.getChildIndex(bobsled) - 1);
+    bobsled.addChildAt(bobsled_dudes[0], 0);
+    bobsled.addChildAt(bobsled_dudes[1], 0);
+    bobsled.addChildAt(bobsled_dudes[2], 0);
   }
 }
 
@@ -366,7 +399,7 @@ function go() {
   stage.removeChild(go_button_hover);
 
   // set physics variables
-  force_push = pushOptionValues[pushSelect.htmlElement.value];
+  force_push = heightOptionValues[heightSelect.htmlElement.value];
   mass = massOptionValues[massSelect.htmlElement.value];
   mu_kinetic = surfaceOptionValues[surfaceSelect.htmlElement.value] + positionOptionValues[positionSelect.htmlElement.value]; // for air drag just add onto the ground friction (for simplicity sake)
 
@@ -426,7 +459,7 @@ function showScore() {
 // bitmap variables
 var muteButton, unmuteButton;
 var background;
-var bobsled;
+var bobsled_image;
 var go_button, reset_button, go_button_hover, reset_button_hover;
 var overlay;
 var backgrounds = [];
@@ -527,7 +560,7 @@ function handleFileLoad(event) {
   } else if (event.item.id == "unmute") {
     unmuteButton = new createjs.Bitmap(event.result);
   } else if (event.item.id == "bobsled") {
-    bobsled = new createjs.Bitmap(event.result);
+    bobsled_image = new createjs.Bitmap(event.result);
   } else if (event.item.id == "go_button") {
     go_button = new createjs.Bitmap(event.result);
   } else if (event.item.id == "go_button_hover") {
