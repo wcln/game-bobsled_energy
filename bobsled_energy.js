@@ -99,7 +99,6 @@ function update(event) {
       } else {
         // update sled x position
         bobsled.x += displacement - last_displacement;
-        updateBobsledDudes();
 
         last_displacement = displacement;
       }
@@ -117,22 +116,9 @@ function endGame() {
 function initGraphics() {
 
   initMuteUnMuteButtons();
-  // push guy
-  var pushguyData = {
-    images: ["images/pushguy_sprite.png"],
-    frames: {width: 50, height: 65, count: 3, regX:0, regY: 0, spacing: 0, margin: 0},
-    animations: {
-      normal: 0,
-      push: [0, 2, false]
-    }
-  }
-  pushguy = new createjs.Sprite(new createjs.SpriteSheet(pushguyData));
-  pushguy.x = 0;
-  pushguy.y = 370;
-  pushguy.gotoAndPlay("normal");
-  //stage.addChild(pushguy);
 
 
+  // ramp
   ramp_low.y = ramp_med.y = ramp_high.y = 230;
   ramp_low.x = ramp_med.x = ramp_high.x = -65;
   stage.addChild(ramp_low);
@@ -154,12 +140,6 @@ function initGraphics() {
   bobsled.y = 340;
   bobsled.rotation = 46;
   stage.addChild(bobsled);
-
-
-//  updateBobsledDudes();
-
-  stage.addChild(bobsled);
-
 
 
   // OVERLAYED SELECT BOXES
@@ -260,7 +240,7 @@ function updateSelectPositions() {
     selectY = 478;
   }
 
-  heightSelect.x = gameCanvas.getBoundingClientRect().left + 65;
+  heightSelect.x = gameCanvas.getBoundingClientRect().left + 87;
   heightSelect.y = gameCanvas.getBoundingClientRect().top + selectY;
 
   massSelect.x = gameCanvas.getBoundingClientRect().left + 212;
@@ -299,11 +279,6 @@ function initListeners() {
   });
 }
 
-function updateBobsledDudes() {
-  for (var i = 0; i < 3; i++) {
-
-  }
-}
 
 /*
  * Add option elements to a select element
@@ -383,7 +358,6 @@ function updatePosition() {
   } else if (positionSelect.htmlElement.value == "Stand") {
     position_y = 0;
   }
-  updateBobsledDudes();
 }
 
 /*
@@ -413,10 +387,6 @@ function go() {
 
   last_displacement = 0;
 
-  // push guy animation
-  createjs.Tween.get(pushguy).call(function(){pushguy.gotoAndPlay("push")}).wait(700).call(function(){pushguy.gotoAndPlay("normal");});
-
-
   moving = true; // update method will run movement code now
 }
 
@@ -440,8 +410,6 @@ function reset() {
   bobsled.x = 20;
   bobsled.y = 360;
 
-  updateBobsledDudes();
-
   // add the go button to the stage
   stage.addChild(go_button);
 }
@@ -463,7 +431,6 @@ var bobsled_image;
 var go_button, reset_button, go_button_hover, reset_button_hover;
 var overlay;
 var backgrounds = [];
-var pushguy;
 var bobsled_dudes = [];
 var ramp_high, ramp_med, ramp_low;
 
