@@ -434,7 +434,7 @@ function go() {
  * Reset the bobsled for another push
  */
 function reset() {
-  // disable selects
+  // enable selects
   heightSelect.htmlElement.disabled = false;
   massSelect.htmlElement.disabled = false;
   surfaceSelect.htmlElement.disabled = false;
