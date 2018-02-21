@@ -1,8 +1,8 @@
 /**
  * BCLearningNetwork.com
  * Bobsled Forces
- * @author Colin Bernard (colinjbernard@hotmail.com)
- * January 2018
+ * @author Colin Bernard (colinjbernard@hotmail.com), Brittany Miller
+ * February 2018
  */
 
 //// VARIABLES ////
@@ -432,6 +432,7 @@ var overlay;
 var backgrounds = [];
 var pushguy;
 var bobsled_dudes = [];
+var ramp_high, ramp_med, ramp_low;
 
 
 function setupManifest() {
@@ -491,6 +492,18 @@ function setupManifest() {
     {
       src: "images/bobsled_dude.png",
       id: "bobsled_dude"
+    },
+    {
+      src: "images/ramp_high.png",
+      id: "ramp_high"
+    },
+    {
+      src: "images/ramp_med.png",
+      id: "ramp_med"
+    },
+    {
+      src: "images/ramp_low.png",
+      id: "ramp_low"
     }
  	];
 }
@@ -539,6 +552,12 @@ function handleFileLoad(event) {
     for (var i = 0; i < 3; i++) {
       bobsled_dudes[i] = Object.create(temp);
     }
+  } else if (event.item.id == "ramp_high") {
+    ramp_high = new createjs.Bitmap(event.result);
+  } else if (event.item.id == "ramp_med") {
+    ramp_med = new createjs.Bitmap(event.result);
+  } else if (event.item.id == "ramp_low") {
+    ramp_low = new createjs.Bitmap(event.result);
   }
 }
 
