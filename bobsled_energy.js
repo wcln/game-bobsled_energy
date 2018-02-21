@@ -24,17 +24,15 @@ var force_push; // set by user
 var mu_kinetic; // set by user
 var PUSHING_TIME = 5; // constant
 
-var start_time; // computed
-var last_displacement = 0;
 
 // select boxes
 var heightSelect, massSelect, surfaceSelect, positionSelect;
 
 // values for options
 var heightOptionValues = [];
-heightOptionValues['Small'] = 200;
+heightOptionValues['Low'] = 200;
 heightOptionValues['Medium'] = 275;
-heightOptionValues['Large'] = 350;
+heightOptionValues['High'] = 350;
 
 var massOptionValues = [];
 massOptionValues['Small'] = 20;
@@ -42,7 +40,7 @@ massOptionValues['Medium'] = 24;
 massOptionValues['Large'] = 27;
 
 var surfaceOptionValues = [];
-surfaceOptionValues['Ice'] = 0.03;
+surfaceOptionValues['Ice'] = 0.04;
 surfaceOptionValues['Snow'] = 0.06;
 surfaceOptionValues['Grass'] = 0.08;
 surfaceOptionValues['Asphalt'] = 0.12;
@@ -64,7 +62,6 @@ var scoreText;
 var isChrome = !!window.chrome && !!window.chrome.webstore;
 
 
-
 function init() {
  	STAGE_WIDTH = parseInt(document.getElementById("gameCanvas").getAttribute("width"));
 	STAGE_HEIGHT = parseInt(document.getElementById("gameCanvas").getAttribute("height"));
@@ -73,6 +70,7 @@ function init() {
 	stage = new createjs.Stage("gameCanvas"); // canvas id is gameCanvas
 	stage.mouseEventsEnabled = true;
 	stage.enableMouseOver(); // Default, checks the mouse 20 times/second for hovering cursor changes
+  createjs.MotionGuidePlugin.install();
 
 	setupManifest(); // preloadJS
 	startPreload();
@@ -83,29 +81,13 @@ function init() {
 function update(event) {
  	if (gameStarted) {
 
-    // bobsled is moving
-    if (moving) {
 
-      let time = (new Date().getTime() / 1000) - start_time; // time in seconds
 
-      // Compute displacement
-      // d = vt + 4.9*m*mu*t^2
-      let displacement = (velocity_initial * time) + (-4.9 * mass * mu_kinetic * Math.pow(time, 2));
 
-      if (displacement - last_displacement < 0) {
-        moving = false;
-        showScore();
-        stage.addChild(reset_button);
-      } else {
-        // update sled x position
-        bobsled.x += displacement - last_displacement;
-
-        last_displacement = displacement;
-      }
-    }
+    updateSelectPositions(); // maintain positions of select HTML elements when page is zoomed or canvas is moved
   }
 
-  updateSelectPositions(); // maintain positions of select HTML elements when page is zoomed or canvas is moved
+
 	stage.update(event);
 }
 
@@ -119,16 +101,17 @@ function initGraphics() {
 
 
   // ramp
-  ramp_low.y = ramp_med.y = ramp_high.y = 230;
+  ramp_low.y = ramp_med.y = ramp_high.y = 213;
   ramp_low.x = ramp_med.x = ramp_high.x = -65;
   stage.addChild(ramp_low);
+
+
 
   // bobsled container
   bobsled = new createjs.Container();
   // bobsled dude(s)
   for (var i = 0; i < 3; i++) {
     bobsled_dudes[i].x = (bobsled_image.x + 7) + 13 * i;
-    bobsled_dudes[i].y = (bobsled_image.y) + position_y;
     bobsled.addChild(bobsled_dudes[i]);
   }
   bobsled.addChild(bobsled_image);
@@ -136,10 +119,8 @@ function initGraphics() {
   bobsled.setBounds(bobsled_image.x, bobsled_image.y, bobsled_image.image.width, bobsled_image.image.height);
   bobsled.regX = bobsled.width/2;
   bobsled.regY = bobsled.height/2;
-  bobsled.x = 40;
-  bobsled.y = 340;
-  bobsled.rotation = 46;
   stage.addChild(bobsled);
+
 
 
   // OVERLAYED SELECT BOXES
@@ -210,8 +191,11 @@ function initGraphics() {
   stage.addChild(positionSelect);
 
   updateMass();
+  updateHeight();
   updateSurface();
   updatePosition();
+
+
 
 	initListeners();
 
@@ -323,14 +307,28 @@ function updateHeight() {
     stage.removeChild(ramp_high);
     stage.removeChild(ramp_med);
     stage.addChildAt(ramp_low, stage.getChildIndex(bobsled) - 1);
+
+    bobsled.x = 50;
+    bobsled.y = 320;
+    bobsled.rotation = 55;
+
   } else if (heightSelect.htmlElement.value == "Medium") {
     stage.removeChild(ramp_low);
     stage.removeChild(ramp_high);
     stage.addChildAt(ramp_med, stage.getChildIndex(bobsled) - 1);
+
+    bobsled.x = 50;
+    bobsled.y = 300;
+    bobsled.rotation = 67;
+
   } else if (heightSelect.htmlElement.value == "High") {
     stage.removeChild(ramp_low);
     stage.removeChild(ramp_med);
     stage.addChildAt(ramp_high, stage.getChildIndex(bobsled) - 1);
+
+    bobsled.x = 50;
+    bobsled.y = 280;
+    bobsled.rotation = 77;
   }
 }
 
@@ -352,11 +350,15 @@ function updateMass() {
 
 function updatePosition() {
   if (positionSelect.htmlElement.value == "Low") {
-    position_y = 13;
+    position_y = 8;
   } else if (positionSelect.htmlElement.value == "Sit") {
-    position_y = 6;
+    position_y = 4;
   } else if (positionSelect.htmlElement.value == "Stand") {
     position_y = 0;
+  }
+
+  for (dude of bobsled_dudes) {
+    dude.y = (bobsled_image.y) + position_y;
   }
 }
 
@@ -364,6 +366,14 @@ function updatePosition() {
  * Launch the bobsled!
  */
 function go() {
+  // disable selects
+  heightSelect.htmlElement.disabled = true;
+  massSelect.htmlElement.disabled = true;
+  surfaceSelect.htmlElement.disabled = true;
+  positionSelect.htmlElement.disabled = true;
+
+  moving = true;
+
   playSound("click");
 
   // ensure reset button is removed
@@ -381,19 +391,55 @@ function go() {
   // compute initial velocity
   velocity_initial = (force_push * PUSHING_TIME) / mass;
 
-  start_time = new Date().getTime() / 1000; // start time in seconds
 
+  // determine curve for down ramp animation
+  if (heightSelect.htmlElement.value == "Low") {
+    curve = 40;
+  } else if (heightSelect.htmlElement.value == "Medium") {
+    curve = 55;
+  } else if (heightSelect.htmlElement.value == "High") {
+    curve = 85;
+  }
 
+  // Compute dsplacement and time
+  var distance = (Math.pow(velocity_initial, 2) / (2 * 9.8 * mu_kinetic * mass));
+  var time = ((2 * distance) / velocity_initial); // in seconds
 
-  last_displacement = 0;
+  // adjustments
+  distance = distance + 100; // add 100 so it is from end of ramp
+  time = time * 1000; // conver to ms
 
-  moving = true; // update method will run movement code now
+  console.log("Distance: " + distance);
+  console.log("Time: " + time);
+
+  // Tween the bobsled
+  createjs.Tween.get(bobsled)
+
+       // curve down ramp
+      .to({guide:{ path:[bobsled.x, bobsled.y, bobsled.x, bobsled.y + curve, 100, 390]}, rotation:0}, // curve down ramp
+       1000, createjs.Ease.getPowIn(2))
+
+       // straight line
+      .to({x:distance}, time, createjs.Ease.getPowOut(2))
+
+       // stopped
+      .call(function() {
+        moving = false;
+        showScore();
+        stage.addChild(reset_button);
+      });
 }
 
 /*
  * Reset the bobsled for another push
  */
 function reset() {
+  // disable selects
+  heightSelect.htmlElement.disabled = false;
+  massSelect.htmlElement.disabled = false;
+  surfaceSelect.htmlElement.disabled = false;
+  positionSelect.htmlElement.disabled = false;
+
   playSound("click");
 
   // ensure that moving is set to false (should be anyways)
@@ -407,8 +453,7 @@ function reset() {
   stage.removeChild(scoreText);
 
   // reset bobsled position
-  bobsled.x = 20;
-  bobsled.y = 360;
+  updateHeight();
 
   // add the go button to the stage
   stage.addChild(go_button);
