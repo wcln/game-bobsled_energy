@@ -34,10 +34,10 @@ heightOptionValues['Low'] = 200;
 heightOptionValues['Medium'] = 275;
 heightOptionValues['High'] = 350;
 
-var massOptionValues = [];
-massOptionValues['Small'] = 20;
-massOptionValues['Medium'] = 24;
-massOptionValues['Large'] = 27;
+var massOptionValues = []; // because of downhill slope, these are reversed and more minor compared to bobsled forces
+massOptionValues['Small'] = 25;
+massOptionValues['Medium'] = 22;
+massOptionValues['Large'] = 20;
 
 var surfaceOptionValues = [];
 surfaceOptionValues['Ice'] = 0.04;
@@ -46,7 +46,7 @@ surfaceOptionValues['Grass'] = 0.08;
 surfaceOptionValues['Asphalt'] = 0.12;
 
 var positionOptionValues = [];
-positionOptionValues['Low'] = 0.008;
+positionOptionValues['Low'] = 0.007;
 positionOptionValues['Sit'] = 0.012;
 positionOptionValues['Stand'] = 0.02;
 
