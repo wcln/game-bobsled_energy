@@ -219,10 +219,7 @@ function initGraphics() {
  * Maintain positions of select HTML elements when page is zoomed or canvas is moved
  */
 function updateSelectPositions() {
-  let selectY = 473; // works well on firefox
-  if (isChrome) {
-    selectY = 480;
-  }
+  let selectY = 480;
 
   heightSelect.x = gameCanvas.getBoundingClientRect().left + 87;
   heightSelect.y = gameCanvas.getBoundingClientRect().top + selectY;
