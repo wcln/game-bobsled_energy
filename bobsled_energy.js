@@ -1,7 +1,7 @@
 /**
- * BCLearningNetwork.com
+ * wcln.ca
  * Bobsled Forces
- * @author Colin Bernard (colinjbernard@hotmail.com), Brittany Miller
+ * @author Colin Perepelken (colin@perepelken.ca), Brittany Miller
  * February 2018
  */
 
